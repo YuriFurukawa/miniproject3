@@ -15,6 +15,13 @@ library(leaflet)
 library(sf)
 ```
 
+```{r}
+url <- "http://wsgw.mass.gov/data/gispub/shape/state/biketrails_arc.zip"
+local_file <- basename(url)
+download.file(url, destfile = local_file)
+unzip(local_file, exdir = "biketrails")
+```
+
 ##Data Wrangling 
 ```{r, message = FALSE, warning = FALSE}
 # Elevation Data: MassGIS Data: Elevation Contours (1:250,000)
