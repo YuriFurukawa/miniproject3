@@ -16,16 +16,16 @@ library(sf)
 ```
 
 ```{r}
-url <- "http://wsgw.mass.gov/data/gispub/shape/state/biketrails_arc.zip"
+url <- "http://download.massgis.digital.mass.gov/shapefiles/state/contours250k.zip"
 local_file <- basename(url)
 download.file(url, destfile = local_file)
-unzip(local_file, exdir = "biketrails")
+unzip(local_file, exdir = "elevation")
 ```
 
 ##Data Wrangling 
 ```{r, message = FALSE, warning = FALSE}
 # Elevation Data: MassGIS Data: Elevation Contours (1:250,000)
-elevation <- system.file("contours250k/CONTOURS250K_ARC.shp", package = "sf") %>%
+elevation <- system.file("elevation/CONTOURS250K_ARC.shp", package = "sf") %>%
   st_read()
 
 
