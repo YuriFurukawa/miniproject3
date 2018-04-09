@@ -35,20 +35,24 @@ st_layers(dsn)
 elevation <- read_sf(dsn)
 
 
+#elevation <- elevation %>%
+#  arrange(desc(CONTOUR_FT))
+
+# Check the Coordinate Reference System of the elevation layer
+elevation %>%
+  st_crs()
+
+# Projection for the elevation layer
 elevation <- elevation %>%
-  arrange(desc(CONTOUR_FT))
+  st_transform(4326)
 
 
+# Join the elevation layer to macleish trails layers and make that as a new dataframe
+my_data <- macleish_layers[["trails"]] %>%
+  mutate(LENGTH = st_length(geometry)) %>%
+  st_intersection(elevation)
 
-trails <- macleish_layers[["trails"]]
-
-trails <- trails %>%
-  mutate(LENGTH = st_length(geometry))
-
-
-
-
-
+#-----------------------------
   proj4_aea <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
 
 road_buffer <- macleish_layers[["trails"]] %>%
