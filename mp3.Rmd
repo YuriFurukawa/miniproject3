@@ -28,7 +28,7 @@ elevation <- st_read("elevation/CONTOURS250K_ARC.shp")
 
 ##Data Wrangling 
 ```{r, message = FALSE, warning = FALSE}
-
+trails <- macleish_layers[["trails"]]
 
 
 
