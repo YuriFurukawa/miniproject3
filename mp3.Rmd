@@ -15,18 +15,22 @@ library(leaflet)
 library(sf)
 ```
 
+## Read in Elevation Contour Shape File
 ```{r}
+# Elevation Data: MassGIS Data: Elevation Contours (1:250,000)
 url <- "http://download.massgis.digital.mass.gov/shapefiles/state/contours250k.zip"
 local_file <- basename(url)
 download.file(url, destfile = local_file)
 unzip(local_file, exdir = "elevation")
+
+elevation <- st_read("elevation/CONTOURS250K_ARC.shp")
 ```
 
 ##Data Wrangling 
 ```{r, message = FALSE, warning = FALSE}
-# Elevation Data: MassGIS Data: Elevation Contours (1:250,000)
-elevation <- system.file("elevation/CONTOURS250K_ARC.shp", package = "sf") %>%
-  st_read()
+
+
+
 
 
 
