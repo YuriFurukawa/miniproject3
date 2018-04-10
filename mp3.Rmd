@@ -79,14 +79,15 @@ trail_pal <- colorFactor("viridis",
 
 leaflet() %>%
   addTiles() %>%
-  addPolylines(data = st_cast(my_data,"LINESTRING"),
-               group= ~difficulty,
-               #color = "black",
-              color = ~trail_pal(difficulty),
-              popup = ~name,
-              fillOpacity = 0.9, weight = 3.5) %>%
-  addPolylines(data = st_cast(macleish_layers[["landmarks"]],"POINT")) %>%
-  addPolygons(data = macleish_layers[["wetlands"]]) %>%
+  addPolylines(data = macleish_layers[["trails"]]) %>%
+  #addPolylines(data = st_cast(my_data,"LINESTRING"),
+  #             group= ~difficulty,
+  #             #color = "black",
+  #            color = ~trail_pal(difficulty),
+  #            popup = ~name,
+  #            fillOpacity = 0.9, weight = 3.5) %>%
+  #addPolylines(data = st_cast(macleish_layers[["landmarks"]],"POINT")) %>%
+  #addPolygons(data = macleish_layers[["streams"]]) %>%
   addLegend(position = "bottomright",
             pal = trail_pal,
             values = my_data$difficulty, 
@@ -108,4 +109,11 @@ leaflet() %>%
   addPolylines(data = macleish_layers[["trails"]], 
                weight = 1, color = "black") %>%
   addPolygons(data = road_buffer) 
+
+
+elevation <- mass_gis()
+macleish_elevation <- macleish_intersect(elevation)
+
+
+dcr_trails <- mass_gis("dcrtrails")
 ```
