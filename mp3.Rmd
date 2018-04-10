@@ -13,6 +13,7 @@ library(macleish)
 library(RColorBrewer)
 library(leaflet)
 library(sf)
+library(units)
 ```
 
 ## Import Elevation Contour Data
@@ -65,20 +66,31 @@ my_data <- trails %>%
          score_length=ifelse(total_length < 1000 * with(ud_units,m), 0,
                              ifelse(total_length > 1000* with(ud_units,m) && 
                                     total_length < 2000* with(ud_units,m), 1, 2)),
-         total_score = score_elevation + score_length)
+         total_score = score_elevation + score_length,
+         difficulty = ifelse(total_score %in% 0:1, "Easy",
+                      ifelse(total_score %in% 2:3, "Moderate", "Difficult")))
+my_data$difficulty <- factor(my_data$difficulty, levels = c("Easy","Moderate","Difficult"))
 ```
 
 ##Data Visualizations
 ```{r, message = FALSE, warning = FALSE}
 trail_pal <- colorFactor("viridis", 
-                  my_data$total_score)
+                  my_data$difficulty)
 
 leaflet() %>%
   addTiles() %>%
-  addPolygons(data = st_cast(my_data,"POINT"),
-              color = ~trail_pal(total_score),
+  addPolylines(data = st_cast(my_data,"LINESTRING"),
+               group= ~difficulty,
+               #color = "black",
+              color = ~trail_pal(difficulty),
               popup = ~name,
-              fillOpacity = 0.8, weight = 0.1)
+              fillOpacity = 0.9, weight = 3.5) %>%
+  addPolylines(data = st_cast(macleish_layers[["landmarks"]],"POINT")) %>%
+  addPolygons(data = macleish_layers[["wetlands"]]) %>%
+  addLegend(position = "bottomright",
+            pal = trail_pal,
+            values = my_data$difficulty, 
+            title = "Difficulty")
 
 ```
 ## Not execute
