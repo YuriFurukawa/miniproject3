@@ -43,7 +43,7 @@ trails <- trails %>%
   arrange(desc(total_length))
 
 #elevation <- elevation %>%
-#  arrange(desc(CONTOUR_FT))
+#  arrange(desc(CONTOUR_FT))s
 
 # Check the Coordinate Reference System of the elevation layer
 elevation %>%
@@ -55,6 +55,7 @@ elevation <- elevation %>%
 
 
 # Join the elevation layer to macleish trails layers and make that as a new dataframe
+
 my_data <- trails %>%
   st_intersection(elevation) %>%
   select(name,total_length, CONTOUR_FT, geometry) %>%
@@ -62,25 +63,34 @@ my_data <- trails %>%
   summarize(change_elevation = max(CONTOUR_FT)-min(CONTOUR_FT)) %>%
   mutate(score_elevation = ifelse(change_elevation %in% 0:40, 0,
                                   ifelse(change_elevation %in% 40:80, 1,2)),
-         score_length=ifelse(total_length < 1000 * with(ud_units,m), 0,
-                             ifelse(total_length > 1000* with(ud_units,m) && 
-                                    total_length < 2000* with(ud_units,m), 1, 2)),
+         score_length=ifelse(total_length < 1000, 0,
+                             ifelse(total_length > 1000 &&
+                                    total_length < 2000, 1,2)),
          total_score = score_elevation + score_length)
 ```
 
 ##Data Visualizations
 ```{r, message = FALSE, warning = FALSE}
-trail_pal <- colorFactor("viridis", 
+trail_pal <- colorNumeric("viridis", 
                   my_data$total_score)
+my_data$geometry <- st_cast(my_data$geometry, "LINESTRING")
 
 leaflet() %>%
-  addTiles() %>%
-  addPolygons(data = st_cast(my_data,"POINT"),
-              color = ~trail_pal(total_score),
-              popup = ~name,
+  addTiles() %>% 
+  addPolylines(data = my_data,
+               color = ~trail_pal(total_length),
+               popup = ~name,
               fillOpacity = 0.8, weight = 0.1)
 
 ```
+
+```{r}
+leaflet() %>%
+  addTiles() %>% 
+  addPolylines(data = my_data)
+```
+
+
 ## Not execute
 ```{r}
 #-----------------------------
@@ -97,3 +107,4 @@ leaflet() %>%
                weight = 1, color = "black") %>%
   addPolygons(data = road_buffer) 
 ```
+
