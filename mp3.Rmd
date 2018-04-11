@@ -11,7 +11,7 @@ output:
 library(tidyverse)
 #devtools::install_github("beanumber/macleish")
 library(macleish)
-packageVersion("macleish")
+packageVersion("tidyverse")
 names(macleish_layers)
 library(RColorBrewer)
 library(leaflet)
@@ -63,7 +63,7 @@ leaflet() %>%
   addTiles() %>%
   addPolylines(data = my_data,
                popup = ~name,
-               group= ~difficulty,
+               group = ~difficulty,
                color = ~trail_pal(difficulty),
                fillOpacity = 0.9, weight = 3.5) %>%
   addCircles(data = st_cast(macleish_layers[["landmarks"]],"POINT"),
@@ -81,7 +81,7 @@ First, we extracted the trail layer under the macleish_layers spatial data. Sinc
 Second, we assigned a score ("score_length") based on the total length of each trail. If a trail's total length falls in the range of 0 and 750 meters, that trail would score 0; if its length falls in the range of 750 to 1500 meters, a trail would score 1; if its length is over 750 meters, it would score 2. We then assigned a score ("score_elevation") based on the maximum change in elevation for each trail. If a trail has a maximum change in elevation between 0 and 30 meters, the trail would score 0, and it would score 1 for 31-60 meters range, and 2 for >60 meters range. After calculating the scores based on length and change in elevation, we combined these two scores into an overall score for the difficulty for using that trail. By calculating this overall score of difficulty, we categorized all the MacLeish trails into three categories. If a trail scores 0 or 1, it is an "Easy" trail; if it scores 2 or 3, it is a "Moderate" trail; if it scores 4, it is a "Difficult" trail.
 
 ## Leaflet Map
-After the data manipulation, we created an interacting leaflet map that shows every MacLeish trail colored by its difficulty. We first created a color palette.
+After the data manipulation, we created an interacting leaflet map that shows every MacLeish trail colored by its difficulty. We first created a color palette using the difficulty category as the values. We then created a leaflet map and every trail is colored by its difficulty. Purple trails represents the easy ones, green represents the moderate ones, and the yellow represents the difficult ones.
 
 
 
