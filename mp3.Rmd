@@ -54,7 +54,8 @@ my_data <- trails %>%
          total_score = score_elevation + score_length,
          difficulty = ifelse(total_score %in% 0:1, "Easy",
                       ifelse(total_score %in% 2:3, "Moderate", "Difficult")))
-
+```
+```{r}
 # Reorder the trail's difficulty factors
 my_data$difficulty <- factor(my_data$difficulty, levels = c("Easy","Moderate","Difficult"))
 ```
