@@ -17,6 +17,7 @@ library(RColorBrewer)
 library(leaflet)
 library(sf)
 library(units)
+
 ```
 
 ## Import Elevation Contour Data
@@ -45,7 +46,6 @@ trails <- trails %>%
   summarize(num_segments = n(), 
             total_length = sum(LENGTH))
 
-
 # Check the Coordinate Reference System of the elevation layer
 elevation %>%
   st_crs()
@@ -56,6 +56,7 @@ elevation <- elevation %>%
 
 
 # Join the elevation layer to macleish trails layers and make that as a new dataframe
+
 my_data <- trails %>%
   st_intersection(elevation) %>%
   select(-INDEX_ARC,-SHAPE_LEN) %>%
@@ -97,7 +98,16 @@ leaflet() %>%
             values = my_data$difficulty, 
             title = "Difficulty")
 
+
 ```
+
+```{r}
+leaflet() %>%
+  addTiles() %>% 
+  addPolylines(data = my_data)
+```
+
+
 ## Not execute
 ```{r}
 #-----------------------------
@@ -121,3 +131,4 @@ macleish_elevation <- macleish_intersect(elevation)
 
 dcr_trails <- mass_gis("dcrtrails")
 ```
+
