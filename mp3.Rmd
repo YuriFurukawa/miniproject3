@@ -13,6 +13,8 @@ library(macleish)
 library(RColorBrewer)
 library(leaflet)
 library(sf)
+library(units)
+
 ```
 
 ## Import Elevation Contour Data
@@ -63,24 +65,36 @@ my_data <- trails %>%
   summarize(change_elevation = max(CONTOUR_FT)-min(CONTOUR_FT)) %>%
   mutate(score_elevation = ifelse(change_elevation %in% 0:40, 0,
                                   ifelse(change_elevation %in% 40:80, 1,2)),
-         score_length=ifelse(total_length < 1000, 0,
-                             ifelse(total_length > 1000 &&
-                                    total_length < 2000, 1,2)),
-         total_score = score_elevation + score_length)
+         score_length=ifelse(total_length < 1000 * with(ud_units,m), 0,
+                             ifelse(total_length > 1000* with(ud_units,m) && 
+                                    total_length < 2000* with(ud_units,m), 1, 2)),
+         total_score = score_elevation + score_length,
+         difficulty = ifelse(total_score %in% 0:1, "Easy",
+                      ifelse(total_score %in% 2:3, "Moderate", "Difficult")))
+my_data$difficulty <- factor(my_data$difficulty, levels = c("Easy","Moderate","Difficult"))
 ```
 
 ##Data Visualizations
 ```{r, message = FALSE, warning = FALSE}
-trail_pal <- colorNumeric("viridis", 
-                  my_data$total_score)
-my_data$geometry <- st_cast(my_data$geometry, "LINESTRING")
+trail_pal <- colorFactor("viridis", 
+                  my_data$difficulty)
 
 leaflet() %>%
-  addTiles() %>% 
-  addPolylines(data = my_data,
-               color = ~trail_pal(total_length),
-               popup = ~name,
-              fillOpacity = 0.8, weight = 0.1)
+  addTiles() %>%
+  addPolylines(data = macleish_layers[["trails"]]) %>%
+  #addPolylines(data = st_cast(my_data,"LINESTRING"),
+  #             group= ~difficulty,
+  #             #color = "black",
+  #            color = ~trail_pal(difficulty),
+  #            popup = ~name,
+  #            fillOpacity = 0.9, weight = 3.5) %>%
+  #addPolylines(data = st_cast(macleish_layers[["landmarks"]],"POINT")) %>%
+  #addPolygons(data = macleish_layers[["streams"]]) %>%
+  addLegend(position = "bottomright",
+            pal = trail_pal,
+            values = my_data$difficulty, 
+            title = "Difficulty")
+
 
 ```
 
@@ -106,5 +120,12 @@ leaflet() %>%
   addPolylines(data = macleish_layers[["trails"]], 
                weight = 1, color = "black") %>%
   addPolygons(data = road_buffer) 
+
+
+elevation <- mass_gis()
+macleish_elevation <- macleish_intersect(elevation)
+
+
+dcr_trails <- mass_gis("dcrtrails")
 ```
 
