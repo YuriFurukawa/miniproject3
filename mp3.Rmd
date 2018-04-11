@@ -9,7 +9,7 @@ output:
 
 ```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
-devtools::install_github("beanumber/macleish")
+#devtools::install_github("beanumber/macleish")
 library(macleish)
 packageVersion("macleish")
 names(macleish_layers)
@@ -31,14 +31,7 @@ unzip(local_file, exdir = "elevation")
 
 ##Data Wrangling 
 ```{r, message = FALSE, warning = FALSE}
-#elevation <- st_read("elevation/CONTOURS250K_ARC.shp")
-
-dsn <- path.expand("elevation")
-dsn
-list.files(dsn)
-st_layers(dsn)
-elevation <- read_sf(dsn)
-
+# Calculate total length for each trail in Macleish Field Station
 trails <- macleish_layers[["trails"]]
 trails <- trails %>%
   mutate(LENGTH = st_length(geometry)) %>%
@@ -46,59 +39,47 @@ trails <- trails %>%
   summarize(num_segments = n(), 
             total_length = sum(LENGTH))
 
-# Check the Coordinate Reference System of the elevation layer
-elevation %>%
-  st_crs()
 
-# Projection for the elevation layer
-elevation <- elevation %>%
-  st_transform(4326)
-
-
-# Join the elevation layer to macleish trails layers and make that as a new dataframe
-
+# Join the 3-meter Contours layer to macleish trails layers and make that as a new dataframe
 my_data <- trails %>%
-  st_intersection(elevation) %>%
-  select(-INDEX_ARC,-SHAPE_LEN) %>%
-  group_by(name,total_length)
-  select(name,total_length, CONTOUR_FT, geometry) %>%
-  group_by(name,total_length)%>%
-  summarize(change_elevation = max(CONTOUR_FT)-min(CONTOUR_FT)) %>%
-  mutate(score_elevation = ifelse(change_elevation %in% 0:40, 0,
-                                  ifelse(change_elevation %in% 40:80, 1,2)),
-         score_length=ifelse(total_length < 1000 * with(ud_units,m), 0,
-                             ifelse(total_length > 1000* with(ud_units,m) && 
-                                    total_length < 2000* with(ud_units,m), 1, 2)),
+  st_join(macleish_layers[["contours_3m"]], join = st_intersects) %>%
+  select(-num_segments,-OBJECTID, -Shape_Leng, -Shape_Area, -ELEV_FT, -INDEX_ARC, -SHAPE_LEN) %>%
+  group_by(name,total_length) %>%
+  summarize(change_elevation = max(ELEV_M)-min(ELEV_M)) %>%
+  mutate(score_elevation = ifelse(change_elevation %in% 0:30, 0,
+                           ifelse(change_elevation %in% 31:60, 1,2)),
+         score_length=ifelse(total_length < 750 * with(ud_units,m), 0,
+                      ifelse(total_length >= 750* with(ud_units,m) && 
+                             total_length < 1500* with(ud_units,m), 1, 2)),
          total_score = score_elevation + score_length,
          difficulty = ifelse(total_score %in% 0:1, "Easy",
                       ifelse(total_score %in% 2:3, "Moderate", "Difficult")))
+
+# Reorder the trail's difficulty factors
 my_data$difficulty <- factor(my_data$difficulty, levels = c("Easy","Moderate","Difficult"))
 ```
 
 ##Data Visualizations
 ```{r, message = FALSE, warning = FALSE}
+# Create a custom color palette for the trail's difficulty
 trail_pal <- colorFactor("viridis", 
                   my_data$difficulty)
 
+# Create a leaflet interacting map
 leaflet() %>%
   addTiles() %>%
-  addPolylines(data = my_data)
-  addPolylines(data = macleish_layers[["trails"]],
-               popup = ~name) %>%
-  #addPolylines(data = st_cast(my_data,"LINESTRING"),
-  #             group= ~difficulty,
-  #             #color = "black",
-  #            color = ~trail_pal(difficulty),
-  #            popup = ~name,
-  #            fillOpacity = 0.9, weight = 3.5) %>%
-  #addPolylines(data = st_cast(macleish_layers[["landmarks"]],"POINT")) %>%
+  addPolylines(data = my_data,
+               popup = ~name,
+               group= ~difficulty,
+               color = ~trail_pal(difficulty),
+               fillOpacity = 0.9, weight = 3.5) %>%
+  addCircles(data = st_cast(macleish_layers[["landmarks"]],"POINT"),
+             popup = ~Label) %>%
   #addPolygons(data = macleish_layers[["streams"]]) %>%
   addLegend(position = "bottomright",
             pal = trail_pal,
             values = my_data$difficulty, 
             title = "Difficulty")
-
-
 ```
 
 ```{r}
@@ -106,6 +87,13 @@ leaflet() %>%
   addTiles() %>% 
   addPolylines(data = my_data)
 ```
+
+
+MacLeish Field Station has roughly four miles of built trail for use by field station visitors. In this mini project, we classified these trails as “Easy,” “Moderate,” or “Difficult” based on their length and change in elevation. This classification helps visitors to perceive which trail is relatively easier to walk and therefore makes a wiser decision on the visiting route.
+First, we extracted the trail layer under the macleish_layers spatial data. Since many of the trails have multiple segments, we calculated the total length of each trail. We then joined this trail layer to the MacLeish 3-meter contours data ("contours_3m") by intersections. After joining these two spatial layers together and calling the returning dataframe as "my_data", we removed some of the variables that we do not care about for this project; in other words, we only kept the name of the trail ("name"), total length of the trail ("total_length"), elevation in meter ("ELEV_M"), and the geometry columns. We then cal
+Second, we assigned a score ("score_length") based on the total length of each trail. If a trail's total length falls in the range of 0 and 750 meters, that trail would score 0; if its length falls in the range of 750 to 1500 meters, a trail would score 1; if its length is over 750 meters, it would score 2. 
+Second, we assigned a score ("score_elevation") based on the maximum change in elevation for each trail.
+
 
 
 ## Not execute
@@ -123,12 +111,5 @@ leaflet() %>%
   addPolylines(data = macleish_layers[["trails"]], 
                weight = 1, color = "black") %>%
   addPolygons(data = road_buffer) 
-
-
-elevation <- mass_gis()
-macleish_elevation <- macleish_intersect(elevation)
-
-
-dcr_trails <- mass_gis("dcrtrails")
 ```
 
