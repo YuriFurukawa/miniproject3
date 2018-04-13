@@ -80,7 +80,7 @@ After the data manipulation, we created an interacting leaflet map that shows ev
 ## Actionable Recommendation
 Our actionable recommendation for Smith College is to put a sign at the intersection of Poplar Hill road and entry trail to suggests “turn right and take a break in our beautiful landmarks!” There are 4 landmarks around entry trail, which are Whately Met Observatory & Tower, Bechtel Environmental Classroom, Orchard Met, and Trail Kiosk. According to Smith College website, Bechtel Environmental Classroom is designed to be one of the “greenest” buildings in the United States[^1]. The building has a seminar and lecture space, a small office, a kitchenette, and two composting toilets. In addition to that, entry trail is classified as a easy road. Therefore, people can enjoy that area who want to take a break while they are biking. Smith College definitely should place a sign at the intersection!
 
-[^1]: 
+[^1]: https://www.smith.edu/ceeds/macleish_bechtel.php
 [^2]: Our GitHub repository is: https://github.com/YuriFurukawa/miniproject3.git
 
 
