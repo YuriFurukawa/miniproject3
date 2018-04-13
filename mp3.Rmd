@@ -1,5 +1,5 @@
 ---
-title: "Mini Project 3"
+title: "Mini Project 3: Standing at a crossroad in MacLeish Station, would you turn left or right?"
 author: "Chelsey Chen, Yuri Furukawa"
 date: "April 15, 2018"
 output:
