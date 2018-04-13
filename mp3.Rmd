@@ -9,23 +9,18 @@ output:
 
 ```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
-#devtools::install_github("beanumber/macleish")
 library(macleish)
-packageVersion("tidyverse")
-names(macleish_layers)
 library(RColorBrewer)
 library(leaflet)
 library(sf)
 library(units)
-
 ```
 
 
 ##Data Wrangling 
 ```{r, message = FALSE, warning = FALSE}
 # Calculate total length for each trail in Macleish Field Station
-trails <- macleish_layers[["trails"]]
-trails <- trails %>%
+trails <- macleish_layers[["trails"]] %>%
   mutate(LENGTH = st_length(geometry)) %>%
   group_by(name) %>%
   summarize(num_segments = n(), 
@@ -46,8 +41,7 @@ my_data <- trails %>%
          total_score = score_elevation + score_length,
          difficulty = ifelse(total_score %in% 0:1, "Easy",
                       ifelse(total_score %in% 2:3, "Moderate", "Difficult")))
-```
-```{r}
+
 # Reorder the trail's difficulty factors
 my_data$difficulty <- factor(my_data$difficulty, levels = c("Easy","Moderate","Difficult"))
 ```
@@ -68,7 +62,6 @@ leaflet() %>%
                fillOpacity = 0.9, weight = 3.5) %>%
   addCircles(data = st_cast(macleish_layers[["landmarks"]],"POINT"),
              popup = ~Label) %>%
-  #addPolygons(data = macleish_layers[["streams"]]) %>%
   addLegend(position = "bottomright",
             pal = trail_pal,
             values = my_data$difficulty, 
@@ -81,24 +74,13 @@ First, we extracted the trail layer under the macleish_layers spatial data. Sinc
 Second, we assigned a score ("score_length") based on the total length of each trail. If a trail's total length falls in the range of 0 and 750 meters, that trail would score 0; if its length falls in the range of 750 to 1500 meters, a trail would score 1; if its length is over 750 meters, it would score 2. We then assigned a score ("score_elevation") based on the maximum change in elevation for each trail. If a trail has a maximum change in elevation between 0 and 30 meters, the trail would score 0, and it would score 1 for 31-60 meters range, and 2 for >60 meters range. After calculating the scores based on length and change in elevation, we combined these two scores into an overall score for the difficulty for using that trail. By calculating this overall score of difficulty, we categorized all the MacLeish trails into three categories. If a trail scores 0 or 1, it is an "Easy" trail; if it scores 2 or 3, it is a "Moderate" trail; if it scores 4, it is a "Difficult" trail.
 
 ## Leaflet Map
-After the data manipulation, we created an interacting leaflet map that shows every MacLeish trail colored by its difficulty. We first created a color palette using the difficulty category as the values. We then created a leaflet map and every trail is colored by its difficulty. Purple trails represents the easy ones, green represents the moderate ones, and the yellow represents the difficult ones.
+After the data manipulation, we created an interacting leaflet map that shows every MacLeish trail colored by its difficulty. We first created a color palette using the difficulty category as the values. We then created a leaflet map and every trail is colored by its difficulty. Purple trails represents the easy ones, green represents the moderate ones, and the yellow represents the difficult ones. We put a legend shown the color mapping, and we rearranged the order of the difficulty so that it can shows in an order of Easy-Moderate-Difficult in our legend. We also added the MacLeish landmark layer onto our map as circles, showing what and how many landmarks are around each trail. These landmarks, particularly their names, are useful when we make our recommendations.
 
 
+## Actionable Recommendation
 
-## Not execute
-```{r}
-#-----------------------------
-  proj4_aea <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+Smith College can put a sign at the intersection of Poplar Hill road and entry trail that suggests to turn right and take a break in Whately Met Observatory & Tower, Bechtel Environmental Classroom, Orchard Met, and Trail Kiosk. There are 4 landmarks around entry trail. In addition to that, entry trail is classified as a easy road. Therefore, people can enjoy that area who want to take a break while they are biking. 
 
-road_buffer <- macleish_layers[["trails"]] %>%
-  st_transform(proj4_aea) %>%
-  st_buffer(dist = 10) %>%
-  st_transform(4326)
 
-leaflet() %>%
-  addTiles() %>%
-  addPolylines(data = macleish_layers[["trails"]], 
-               weight = 1, color = "black") %>%
-  addPolygons(data = road_buffer) 
-```
+[^1]: Our GitHub repository is: https://github.com/YuriFurukawa/miniproject3.git
 
